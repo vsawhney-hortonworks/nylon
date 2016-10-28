@@ -1,0 +1,12 @@
+{
+        "enumTypes": [],
+        "structTypes": [],
+        "traitTypes": [{
+            "superTypes": [],
+            "hierarchicalMetaTypeName": "org.apache.atlas.typesystem.types.TraitType",
+            "typeName": "protected",
+            "typeDescription": "for protected Data",
+            "attributeDefinitions": []
+        }],
+        "classTypes": []
+ }
