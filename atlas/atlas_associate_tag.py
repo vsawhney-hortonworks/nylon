@@ -4,27 +4,27 @@ import requests
 import json
 import sys
 import string
+###################################################################################
+### Usage: For tagging Table:  
+###   python atlas_associate_tag.py --atlas_server_uri atlas.server.fqdn:port \
+###    --atlas_table_FQDN default.students_compute:qrs@turing  \
+###    --atlas_traits PII,MPPI
+###        
+###        For tagging Column: 
+###   python atlas_associate_tag.py --atlas_server_uri atlas.server.fqdn:port \
+###    --atlas_table_FQDN default.students_computers@turing \
+###    --atlas_column_name id  \
+###    --atlas_traits PII,MPPI
+### 
+### Notes:-
+### 1. The script should be able handle both table, column tagging
+### 2. Ability to tag multiple traits
+### 3. Basic validations like does the tags/traits provided actually exist
+### 4. Assumes an unsecure environment, admin/admin access for atlas
+### 5. Tested on HDP 2.5
+####################################################################################
 
-###from atlas_api import *
-
-### python atlas_associate_tag.py --atlas_server_uri xena.hdp.com:21000 --atlas_table_FQDN default.students_computers@turing  --atlas_traits PII,MPPI
-
-
-##tableFQDN = 'default.students_computers@turing'
-##trait='protected'
-##print("FIND HIVE_TABLE ENTITY FOR MODIFICATION:")
-##hive_table_json=atlasREST("/api/atlas/entities?type=hive_table&property=qualifiedName&value=%s" % (tableFQDN))
-##hive_table_id=hive_table_json['definition']['id']['id']
-
-##trait_json=json.loads('{"jsonClass":"org.apache.atlas.typesystem.json.InstanceSerialization$_Struct","typeName":"%s","values":{"name":"addTrait"}}' %(trait))
-##print json.dumps(trait_json)
-##print json.dumps()
-##print ("Updating traits on hive_table %s" % (tableFQDN))
-##updatedTable = atlasPOST("/api/atlas/entities/%s/traits" % (hive_table_id), trait_json)
-###print traitJson
-###print json.dumps(hive_tables, indent=4, sort_keys=True)
-
-ATLAS_DOMAIN="yellow.hdp.com:21000"
+ATLAS_DOMAIN = "null"
 
 def atlasREST( restAPI ) :
 ## TODO Verify received code = 200 or else produce an error
@@ -49,16 +49,16 @@ def parse_args():
   parser.add_argument('--atlas_table_FQDN', required=True)
   parser.add_argument('--atlas_column_name', required=False)
   parser.add_argument('--atlas_traits', required=True)
-  
-  
   return parser.parse_args()
+
 
 def print_args(atlas_server_uri, atlas_table_FQDN, atlas_traits):
   """Atlas Associate Tags: Prints All Arguments parsed """
   #print ('Parsed these arguments: %s, %s, %s' % (atlas_server_uri, atlas_table_FQDN, atlas_traits))
 
+
 def associate_tags_table(atlas_server_uri, atlas_table_FQDN, atlas_traits):
-  """Atlas Associate Tags: Prints All Arguments parsed """
+  """Atlas Associate Tags: Tag tables """
   print ('Parsed these arguments: %s, %s, %s' % (atlas_server_uri, atlas_table_FQDN, atlas_traits))
   hive_table_json=atlasREST("/api/atlas/entities?type=hive_table&property=qualifiedName&value=%s" % (atlas_table_FQDN))
   hive_table_id=hive_table_json['definition']['id']['id']
@@ -68,11 +68,11 @@ def associate_tags_table(atlas_server_uri, atlas_table_FQDN, atlas_traits):
     print json.dumps(trait_json)
     updatedTable = atlasPOST("/api/atlas/entities/%s/traits" % (hive_table_id), trait_json)
 
+
 def associate_tags_column(atlas_server_uri, atlas_table_FQDN, atlas_column_name, atlas_traits):
-  """Atlas Associate Tags: Prints All Arguments parsed """
+  """Atlas Associate Tags: Tag Columns """
   print ('Parsed these arguments: %s, %s, %s, %s' % (atlas_server_uri, atlas_table_FQDN, atlas_column_name, atlas_traits))
   atlas_column_FQDN = string.split(atlas_table_FQDN,"@")[0]+"."+atlas_column_name+"@"+string.split(atlas_table_FQDN,"@")[1]
-  
   hive_column_json=atlasREST("/api/atlas/entities?type=hive_column&property=qualifiedName&value=%s" % (atlas_column_FQDN))
   hive_column_id=hive_column_json['definition']['id']['id']
   trait_list=atlas_traits.split(",")
@@ -113,6 +113,8 @@ def validate_tags(atlas_traits):
 
 def main():
   args = parse_args()
+  global ATLAS_DOMAIN 
+  ATLAS_DOMAIN = args.atlas_server_uri
   print_args(
       args.atlas_server_uri,
       args.atlas_table_FQDN,
